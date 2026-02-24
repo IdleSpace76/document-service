@@ -1,4 +1,4 @@
-package ru.test.document_service.domain.enums;
+package ru.test.document_service.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-import ru.test.document_service.domain.DocumentItem;
 
 import java.time.Instant;
 

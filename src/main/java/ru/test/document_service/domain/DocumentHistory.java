@@ -51,7 +51,7 @@ public class DocumentHistory {
      * Тип действия
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "action")
+    @Column(name = "action", nullable = false)
     private DocumentAction action;
 
     /**

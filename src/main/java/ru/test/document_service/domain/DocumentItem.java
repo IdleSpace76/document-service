@@ -40,8 +40,14 @@ public class DocumentItem {
     /**
      * Автор
      */
-    @Column(name = "author")
+    @Column(name = "author", nullable = false)
     private String author;
+
+    /**
+     * Название документа
+     */
+    @Column(name = "title", nullable = false)
+    private String title;
 
     /**
      * Статус
