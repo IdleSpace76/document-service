@@ -5,8 +5,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.test.document_service.domain.DocumentItem;
+import ru.test.document_service.dto.DocumentApproveRequest;
 import ru.test.document_service.dto.DocumentCreateRequest;
 import ru.test.document_service.dto.DocumentResponse;
+import ru.test.document_service.dto.DocumentSubmitRequest;
 import ru.test.document_service.service.DocumentService;
 
 import java.net.URI;
@@ -52,6 +54,30 @@ public class DocumentController {
         return documentService.getAll().stream()
                 .map(this::createResponseBody)
                 .toList();
+    }
+
+    /**
+     * Отправить документ на утверждение (SUBMIT)
+     */
+    @PostMapping("/{id}/submit")
+    public DocumentResponse submit(
+            @PathVariable Long id,
+            @Valid @RequestBody DocumentSubmitRequest request
+    ) {
+        DocumentItem document = documentService.submit(id, request.getPerformedBy(), request.getComment());
+        return createResponseBody(document);
+    }
+
+    /**
+     * Утвердить документ (APPROVE)
+     */
+    @PostMapping("/{id}/approve")
+    public DocumentResponse approve(
+            @PathVariable Long id,
+            @Valid @RequestBody DocumentApproveRequest request
+    ) {
+        DocumentItem document = documentService.approve(id, request.getApprover(), request.getComment());
+        return createResponseBody(document);
     }
 
     private DocumentResponse createResponseBody(DocumentItem document) {

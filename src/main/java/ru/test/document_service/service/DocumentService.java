@@ -22,12 +22,17 @@ public interface DocumentService {
     DocumentItem getById(Long id);
 
     /**
-     * Найти документ по uid
-     */
-    DocumentItem getByUid(String uid);
-
-    /**
      * Получить все документы
      */
     List<DocumentItem> getAll();
+
+    /**
+     * Отправить документ на утверждение (SUBMIT)
+     */
+    DocumentItem submit(Long id, String performedBy, String comment);
+
+    /**
+     * Утвердить документ (APPROVE)
+     */
+    DocumentItem approve(Long id, String approver, String comment);
 }
