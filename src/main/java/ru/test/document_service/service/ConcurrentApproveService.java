@@ -26,7 +26,7 @@ public class ConcurrentApproveService {
     private final ApprovalRegistryRecordRepository approvalRegistryRepository;
 
     @Transactional(readOnly = true)
-    public ConcurrentApproveResponse concurrentApprove(ConcurrentApproveRequest request) throws InterruptedException {
+    public ConcurrentApproveResponse concurrentApprove(ConcurrentApproveRequest request) {
         int threads = request.getThreads();
         int attemptsPerThread = request.getAttemptsPerThread();
         int totalAttempts = threads * attemptsPerThread;
@@ -70,7 +70,15 @@ public class ConcurrentApproveService {
             }
 
             // ждём завершения всех потоков
-            boolean completed = latch.await(1, TimeUnit.MINUTES);
+            boolean completed;
+            try {
+                completed = latch.await(1, TimeUnit.MINUTES);
+            }
+            catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException(
+                        "Метод был прерван", e);
+            }
             if (!completed) {
                 throw new IllegalStateException("Таймаут в работе метода");
             }

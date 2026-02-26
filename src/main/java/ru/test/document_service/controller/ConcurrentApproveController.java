@@ -24,8 +24,7 @@ public class ConcurrentApproveController {
      * Запуск конкурентного approve для одного документа
      */
     @PostMapping
-    public ConcurrentApproveResponse runTest(@Valid @RequestBody ConcurrentApproveRequest request)
-            throws InterruptedException {
+    public ConcurrentApproveResponse runTest(@Valid @RequestBody ConcurrentApproveRequest request) {
         return concurrentApproveService.concurrentApprove(request);
     }
 }
