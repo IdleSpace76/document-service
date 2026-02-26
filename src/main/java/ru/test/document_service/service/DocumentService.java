@@ -1,6 +1,8 @@
 package ru.test.document_service.service;
 
 import ru.test.document_service.domain.DocumentItem;
+import ru.test.document_service.dto.DocumentSearchFilter;
+import ru.test.document_service.dto.batch.DocumentBatchResponse;
 
 import java.util.List;
 
@@ -35,4 +37,19 @@ public interface DocumentService {
      * Утвердить документ (APPROVE)
      */
     DocumentItem approve(Long id, String approver, String comment);
+
+    /**
+     * Пакетный submit документов
+     */
+    DocumentBatchResponse submitBatch(List<Long> documentIds, String performedBy, String comment);
+
+    /**
+     * Пакетный approve документов
+     */
+    DocumentBatchResponse approveBatch(List<Long> documentIds, String approver, String comment);
+
+    /**
+     * Поиск документов
+     */
+    List<DocumentItem> search(DocumentSearchFilter filter);
 }

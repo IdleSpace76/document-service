@@ -5,10 +5,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.test.document_service.domain.DocumentItem;
-import ru.test.document_service.dto.DocumentApproveRequest;
-import ru.test.document_service.dto.DocumentCreateRequest;
-import ru.test.document_service.dto.DocumentResponse;
-import ru.test.document_service.dto.DocumentSubmitRequest;
+import ru.test.document_service.dto.*;
+import ru.test.document_service.dto.batch.BatchDocumentApproveRequest;
+import ru.test.document_service.dto.batch.BatchDocumentSubmitRequest;
+import ru.test.document_service.dto.batch.DocumentBatchResponse;
 import ru.test.document_service.service.DocumentService;
 
 import java.net.URI;
@@ -78,6 +78,37 @@ public class DocumentController {
     ) {
         DocumentItem document = documentService.approve(id, request.getApprover(), request.getComment());
         return createResponseBody(document);
+    }
+
+    /**
+     * Пакетный submit документов
+     */
+    @PostMapping("/batch/submit")
+    public DocumentBatchResponse submitBatch(@Valid @RequestBody BatchDocumentSubmitRequest request) {
+        return documentService.submitBatch(
+                request.getDocumentIds(),
+                request.getPerformedBy(),
+                request.getComment()
+        );
+    }
+
+    /**
+     * Пакетный approve документов
+     */
+    @PostMapping("/batch/approve")
+    public DocumentBatchResponse approveBatch(@Valid @RequestBody BatchDocumentApproveRequest request) {
+        return documentService.approveBatch(
+                request.getDocumentIds(),
+                request.getApprover(),
+                request.getComment()
+        );
+    }
+
+    @GetMapping("/search")
+    public List<DocumentResponse> search(@ModelAttribute DocumentSearchFilter filter) {
+        return documentService.search(filter).stream()
+                .map(this::createResponseBody)
+                .toList();
     }
 
     private DocumentResponse createResponseBody(DocumentItem document) {

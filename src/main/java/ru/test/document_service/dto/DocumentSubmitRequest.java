@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 /**
- * DTO для отправки документа на утверждение
+ * DTO для отправки документа на субмит
  *
  * @author a.zharov
  */

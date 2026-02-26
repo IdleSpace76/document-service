@@ -1,6 +1,7 @@
 package ru.test.document_service.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.test.document_service.dao.ApprovalRegistryRecordRepository;
@@ -11,8 +12,12 @@ import ru.test.document_service.domain.DocumentHistory;
 import ru.test.document_service.domain.DocumentItem;
 import ru.test.document_service.domain.enums.DocumentAction;
 import ru.test.document_service.domain.enums.DocumentStatus;
+import ru.test.document_service.dto.DocumentSearchFilter;
+import ru.test.document_service.dto.batch.DocumentBatchItemResult;
+import ru.test.document_service.dto.batch.DocumentBatchResponse;
 import ru.test.document_service.service.DocumentService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -34,7 +39,6 @@ public class DocumentServiceImpl implements DocumentService {
         String uid = generateUniqueUid();
 
         DocumentItem document = new DocumentItem();
-        // Если есть вероятность коллизии УИДа, можно сделать повторную генерацию со счетчиком
         document.setUid(uid);
         document.setAuthor(author);
         document.setTitle(title);
@@ -108,6 +112,87 @@ public class DocumentServiceImpl implements DocumentService {
         approvalRegistryRepository.save(registryRecord);
 
         return saved;
+    }
+
+    @Override
+    @Transactional
+    public DocumentBatchResponse submitBatch(List<Long> documentIds, String performedBy, String comment) {
+        List<DocumentBatchItemResult> results = new ArrayList<>();
+
+        for (Long id : documentIds) {
+            try {
+                submit(id, performedBy, comment);
+                results.add(DocumentBatchItemResult.builder()
+                        .documentId(id)
+                        .success(true)
+                        .message(null)
+                        .build());
+            }
+            catch (Exception ex) {
+                results.add(DocumentBatchItemResult.builder()
+                        .documentId(id)
+                        .success(false)
+                        .message(ex.getMessage())
+                        .build());
+            }
+        }
+
+        return DocumentBatchResponse.builder()
+                .results(results)
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public DocumentBatchResponse approveBatch(List<Long> documentIds, String approver, String comment) {
+        List<DocumentBatchItemResult> results = new ArrayList<>();
+
+        for (Long id : documentIds) {
+            try {
+                approve(id, approver, comment);
+                results.add(DocumentBatchItemResult.builder()
+                        .documentId(id)
+                        .success(true)
+                        .message(null)
+                        .build());
+            }
+            catch (Exception ex) {
+                results.add(DocumentBatchItemResult.builder()
+                        .documentId(id)
+                        .success(false)
+                        .message(ex.getMessage())
+                        .build());
+            }
+        }
+
+        return DocumentBatchResponse.builder()
+                .results(results)
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DocumentItem> search(DocumentSearchFilter filter) {
+        Specification<DocumentItem> spec = Specification.unrestricted();
+
+        if (filter.getStatus() != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("status"), filter.getStatus()));
+        }
+        if (filter.getAuthor() != null && !filter.getAuthor().isBlank()) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("author"), filter.getAuthor()));
+        }
+        if (filter.getCreatedFrom() != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.greaterThanOrEqualTo(root.get("createdAt"), filter.getCreatedFrom()));
+        }
+        if (filter.getCreatedTo() != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.lessThanOrEqualTo(root.get("createdAt"), filter.getCreatedTo()));
+        }
+
+        return documentRepository.findAll(spec);
     }
 
     /**
