@@ -86,7 +86,8 @@ public class DocumentServiceImpl implements DocumentService {
     @Override
     @Transactional
     public DocumentItem approve(Long id, String approver, String comment) {
-        DocumentItem document = getById(id);
+        DocumentItem document = documentRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new NoSuchElementException("Документ по id не найден, id = " + id));
 
         if (document.getStatus() != DocumentStatus.SUBMITTED) {
             throw new IllegalStateException(

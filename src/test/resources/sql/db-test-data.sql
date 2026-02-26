@@ -33,6 +33,7 @@ SELECT setval('approval_registry_seq',
               COALESCE((SELECT MAX(id) FROM approval_registry), 1),
               true);
 
+-- Batch
 /*POST http://localhost:8080/api/documents/batch/submit
 Content-Type: application/json
 
@@ -51,8 +52,21 @@ Content-Type: application/json
   "comment": "Batch approve test"
 }*/
 
+-- Search
 -- GET http://localhost:8080/api/documents/search?status=SUBMITTED
 -- GET http://localhost:8080/api/documents/search?author=ivan
 -- GET http://localhost:8080/api/documents/search?status=SUBMITTED&author=ivan
 -- GET http://localhost:8080/api/documents/search?createdFrom=2026-02-23T00:00:00Z
 -- GET http://localhost:8080/api/documents/search?createdFrom=2026-02-20T00:00:00Z&createdTo=2026-02-25T23:59:59Z
+
+-- Concurrent
+-- POST http://localhost:8080/api/documents/concurrent-approve
+-- Content-Type: application/json
+--
+-- {
+--   "documentId": 5,
+--   "threads": 5,
+--   "attemptsPerThread": 10,
+--   "approver": "concurrent_tester",
+--   "comment": "Concurrent approve test"
+-- }
