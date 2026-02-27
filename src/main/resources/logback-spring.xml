@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- Подтягиваем дефолтные настройки Spring Boot (паттерны, переменные и т.п.) -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- Консольный аппендер Boot'а -->
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <!-- Файловый аппендер Boot'а (application.log) -->
+    <property name="LOG_FILE" value="logs/application.log"/>
+    <include resource="org/springframework/boot/logging/logback/file-appender.xml"/>
+
+    <!-- ===== Отдельный файл для воркеров ===== -->
+    <appender name="WORKER_FILE" class="ch.qos.logback.core.FileAppender">
+        <file>logs/workers.log</file>
+        <encoder>
+            <!-- используем тот же паттерн, что и у Boot -->
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Корневой логгер: всё приложение → консоль + application.log -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+
+    <!-- Логгер для воркеров: всё из пакета service.worker → в отдельный файл -->
+    <!-- additivity=false => не дублируем в application.log, только в workers.log -->
+    <logger name="ru.test.document_service.service.worker" level="INFO" additivity="false">
+        <appender-ref ref="WORKER_FILE"/>
+    </logger>
+
+</configuration>

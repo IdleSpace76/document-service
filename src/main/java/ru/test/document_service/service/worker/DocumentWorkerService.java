@@ -2,6 +2,7 @@ package ru.test.document_service.service.worker;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -30,11 +31,17 @@ public class DocumentWorkerService {
      * Воркер: отправить на субмит batchSize документов в статусе DRAFT
      */
     public WorkerRunResponse runSubmitWorker(int batchSize) {
-        List<DocumentItem> draftDocs = documentRepository
-                .findByStatus(DocumentStatus.DRAFT, PageRequest.of(0, batchSize, Sort.by("id").ascending()))
-                .getContent();
+        long started = System.nanoTime();
+
+        Page<DocumentItem> page = documentRepository.findByStatus(
+                DocumentStatus.DRAFT,
+                PageRequest.of(0, batchSize, Sort.by("id").ascending())
+        );
+
+        List<DocumentItem> draftDocs = page.getContent();
 
         if (draftDocs.isEmpty()) {
+            log.debug("submit-worker: нет документов в статусе DRAFT для обработки");
             return WorkerRunResponse.builder()
                     .requestedBatchSize(batchSize)
                     .selectedCount(0)
@@ -46,23 +53,33 @@ public class DocumentWorkerService {
         DocumentBatchResponse response = batchDocumentService.submitBatch(
                 draftDocs.stream().map(DocumentItem::getId).toList(),
                 "submit-worker",
-                "Субмит от submit-worker");
+                "Субмит от submit-worker"
+        );
 
         int success = 0;
         int failed = 0;
         for (DocumentBatchItemResult item : response.getResults()) {
             if (item.isSuccess()) {
                 success++;
-            }
-            else {
+            } else {
                 failed++;
                 log.warn(
-                        "submit-worker: ошибка субмита на документе id={} : reason={}",
+                        "submit-worker: ошибка субмита документа id={} : reason={}",
                         item.getDocumentId(),
                         item.getMessage()
                 );
             }
         }
+
+        long durationMs = (System.nanoTime() - started) / 1_000_000;
+
+        long totalBefore = page.getTotalElements();
+        long remainingDraft = Math.max(0, totalBefore - success);
+
+        log.info(
+                "submit-worker: batchSize={}, selected={}, success={}, failed={}, remainingDraft~={}, time={} ms",
+                batchSize, draftDocs.size(), success, failed, remainingDraft, durationMs
+        );
 
         return WorkerRunResponse.builder()
                 .requestedBatchSize(batchSize)
@@ -76,11 +93,17 @@ public class DocumentWorkerService {
      * Воркер: отправить на апрув batchSize документов в статусе SUBMITTED
      */
     public WorkerRunResponse runApproveWorker(int batchSize) {
-        List<DocumentItem> submittedDocs = documentRepository
-                .findByStatus(DocumentStatus.SUBMITTED, PageRequest.of(0, batchSize, Sort.by("id").ascending()))
-                .getContent();
+        long started = System.nanoTime();
+
+        Page<DocumentItem> page = documentRepository.findByStatus(
+                DocumentStatus.SUBMITTED,
+                PageRequest.of(0, batchSize, Sort.by("id").ascending())
+        );
+
+        List<DocumentItem> submittedDocs = page.getContent();
 
         if (submittedDocs.isEmpty()) {
+            log.debug("approve-worker: нет документов в статусе SUBMITTED для обработки");
             return WorkerRunResponse.builder()
                     .requestedBatchSize(batchSize)
                     .selectedCount(0)
@@ -92,23 +115,33 @@ public class DocumentWorkerService {
         DocumentBatchResponse response = batchDocumentService.approveBatch(
                 submittedDocs.stream().map(DocumentItem::getId).toList(),
                 "approve-worker",
-                "Апрув от approve-worker");
+                "Апрув от approve-worker"
+        );
 
         int success = 0;
         int failed = 0;
         for (DocumentBatchItemResult item : response.getResults()) {
             if (item.isSuccess()) {
                 success++;
-            }
-            else {
+            } else {
                 failed++;
                 log.warn(
-                        "approve-worker: ошибка апрува на документе id={} : reason={}",
+                        "approve-worker: ошибка апрува документа id={} : reason={}",
                         item.getDocumentId(),
                         item.getMessage()
                 );
             }
         }
+
+        long durationMs = (System.nanoTime() - started) / 1_000_000;
+
+        long totalBefore = page.getTotalElements();
+        long remainingSubmitted = Math.max(0, totalBefore - success);
+
+        log.info(
+                "approve-worker: batchSize={}, selected={}, success={}, failed={}, remainingSubmitted~={}, time={} ms",
+                batchSize, submittedDocs.size(), success, failed, remainingSubmitted, durationMs
+        );
 
         return WorkerRunResponse.builder()
                 .requestedBatchSize(batchSize)

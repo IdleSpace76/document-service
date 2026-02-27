@@ -28,7 +28,9 @@ public class DocumentGeneratorApp {
         String baseUrl = props.getProperty("baseUrl", "http://localhost:8080");
         String author = props.getProperty("author", "generator");
 
-        System.out.printf("Генерируется %d документов по адресу %s%n", count, baseUrl);
+        System.out.printf("Генерируется %d документов по адресу %s, автор=%s%n", count, baseUrl, author);
+
+        long started = System.nanoTime();
 
         try (HttpClient client = HttpClient.newHttpClient()) {
 
@@ -45,13 +47,25 @@ public class DocumentGeneratorApp {
                         .POST(HttpRequest.BodyPublishers.ofString(json))
                         .build();
 
+                long reqStart = System.nanoTime();
                 HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                System.out.printf("Request #%d: HTTP %d, body=%s%n",
-                        i, response.statusCode(), response.body());
+                long reqDurationMs = (System.nanoTime() - reqStart) / 1_000_000;
+
+                System.out.printf(
+                        "Создание документа %d/%d: HTTP %d, time=%d ms, body=%s%n",
+                        i, count, response.statusCode(), reqDurationMs, response.body()
+                );
+
             }
         }
 
-        System.out.println("Генерация завершена.");
+        long totalMs = (System.nanoTime() - started) / 1_000_000;
+        double perDoc = count > 0 ? (double) totalMs / count : 0.0;
+
+        System.out.printf(
+                "Генератор: создание %d документов завершено за %d ms (%.2f ms/документ)%n",
+                count, totalMs, perDoc
+        );
     }
 
     private static Path resolveConfigPath(String[] args) {

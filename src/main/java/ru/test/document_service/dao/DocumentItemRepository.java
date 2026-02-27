@@ -29,4 +29,6 @@ public interface DocumentItemRepository extends
     Page<DocumentItem> findByStatus(DocumentStatus status, Pageable pageable);
 
     Page<DocumentItem> findByIdIn(List<Long> ids, Pageable pageable);
+
+    long countByStatus(DocumentStatus status);
 }
