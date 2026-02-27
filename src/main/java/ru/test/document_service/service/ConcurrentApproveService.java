@@ -76,8 +76,7 @@ public class ConcurrentApproveService {
             }
             catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new IllegalStateException(
-                        "Метод был прерван", e);
+                throw new IllegalStateException("Метод был прерван", e);
             }
             if (!completed) {
                 throw new IllegalStateException("Таймаут в работе метода");

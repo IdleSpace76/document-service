@@ -12,7 +12,7 @@ import lombok.Getter;
 @Builder
 public class DocumentBatchItemResult {
 
-    Long documentId;
-    boolean success;
-    String message;
+    private Long documentId;
+    private boolean success;
+    private String message;
 }

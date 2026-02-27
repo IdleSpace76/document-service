@@ -15,11 +15,11 @@ import java.time.Instant;
 @Builder
 public class DocumentResponse {
 
-    Long id;
-    String uid;
-    String author;
-    String title;
-    DocumentStatus status;
-    Instant createdAt;
-    Instant updatedAt;
+    private Long id;
+    private String uid;
+    private String author;
+    private String title;
+    private DocumentStatus status;
+    private Instant createdAt;
+    private Instant updatedAt;
 }

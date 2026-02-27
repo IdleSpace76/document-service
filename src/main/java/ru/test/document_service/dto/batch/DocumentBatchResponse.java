@@ -17,5 +17,5 @@ public class DocumentBatchResponse {
     /**
      * Список результатов по каждому документу
      */
-    List<DocumentBatchItemResult> results;
+    private List<DocumentBatchItemResult> results;
 }

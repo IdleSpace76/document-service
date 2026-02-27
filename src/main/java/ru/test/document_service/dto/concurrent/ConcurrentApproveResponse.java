@@ -13,14 +13,12 @@ import ru.test.document_service.domain.enums.DocumentStatus;
 @Builder
 public class ConcurrentApproveResponse {
 
-    int threads;
-    int attemptsPerThread;
-    int totalAttempts;
-
-    int successCount;
-    int conflictCount;
-    int errorCount;
-
-    DocumentStatus finalStatus;
-    long registryRecordsCount;
+    private int threads;
+    private int attemptsPerThread;
+    private int totalAttempts;
+    private int successCount;
+    private int conflictCount;
+    private int errorCount;
+    private DocumentStatus finalStatus;
+    private long registryRecordsCount;
 }

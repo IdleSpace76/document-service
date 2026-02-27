@@ -2,6 +2,10 @@ package ru.test.document_service.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.test.document_service.domain.DocumentItem;
@@ -9,7 +13,9 @@ import ru.test.document_service.dto.*;
 import ru.test.document_service.dto.batch.BatchDocumentApproveRequest;
 import ru.test.document_service.dto.batch.BatchDocumentSubmitRequest;
 import ru.test.document_service.dto.batch.DocumentBatchResponse;
+import ru.test.document_service.mapper.DocumentMapper;
 import ru.test.document_service.service.DocumentService;
+import ru.test.document_service.service.BatchDocumentService;
 
 import java.net.URI;
 import java.util.List;
@@ -23,6 +29,7 @@ import java.util.List;
 public class DocumentController {
 
     private final DocumentService documentService;
+    private final BatchDocumentService batchDocumentService;
 
     /**
      * Создать документ
@@ -30,7 +37,7 @@ public class DocumentController {
     @PostMapping
     public ResponseEntity<DocumentResponse> create(@Valid @RequestBody DocumentCreateRequest request) {
         DocumentItem document = documentService.createDocument(request.getAuthor(), request.getTitle());
-        DocumentResponse body = createResponseBody(document);
+        DocumentResponse body = DocumentMapper.toResponse(document);
 
         return ResponseEntity
                 .created(URI.create("/api/documents/" + document.getId()))
@@ -43,7 +50,7 @@ public class DocumentController {
     @GetMapping("/{id}")
     public DocumentResponse getById(@PathVariable Long id) {
         DocumentItem document = documentService.getById(id);
-        return createResponseBody(document);
+        return DocumentMapper.toResponse(document);
     }
 
     /**
@@ -52,7 +59,7 @@ public class DocumentController {
     @GetMapping
     public List<DocumentResponse> getAll() {
         return documentService.getAll().stream()
-                .map(this::createResponseBody)
+                .map(DocumentMapper::toResponse)
                 .toList();
     }
 
@@ -65,7 +72,7 @@ public class DocumentController {
             @Valid @RequestBody DocumentSubmitRequest request
     ) {
         DocumentItem document = documentService.submit(id, request.getPerformedBy(), request.getComment());
-        return createResponseBody(document);
+        return DocumentMapper.toResponse(document);
     }
 
     /**
@@ -77,7 +84,7 @@ public class DocumentController {
             @Valid @RequestBody DocumentApproveRequest request
     ) {
         DocumentItem document = documentService.approve(id, request.getApprover(), request.getComment());
-        return createResponseBody(document);
+        return DocumentMapper.toResponse(document);
     }
 
     /**
@@ -85,7 +92,7 @@ public class DocumentController {
      */
     @PostMapping("/batch/submit")
     public DocumentBatchResponse submitBatch(@Valid @RequestBody BatchDocumentSubmitRequest request) {
-        return documentService.submitBatch(
+        return batchDocumentService.submitBatch(
                 request.getDocumentIds(),
                 request.getPerformedBy(),
                 request.getComment()
@@ -97,7 +104,7 @@ public class DocumentController {
      */
     @PostMapping("/batch/approve")
     public DocumentBatchResponse approveBatch(@Valid @RequestBody BatchDocumentApproveRequest request) {
-        return documentService.approveBatch(
+        return batchDocumentService.approveBatch(
                 request.getDocumentIds(),
                 request.getApprover(),
                 request.getComment()
@@ -107,19 +114,25 @@ public class DocumentController {
     @GetMapping("/search")
     public List<DocumentResponse> search(@ModelAttribute DocumentSearchFilter filter) {
         return documentService.search(filter).stream()
-                .map(this::createResponseBody)
+                .map(DocumentMapper::toResponse)
                 .toList();
     }
 
-    private DocumentResponse createResponseBody(DocumentItem document) {
-        return DocumentResponse.builder()
-                .id(document.getId())
-                .uid(document.getUid())
-                .author(document.getAuthor())
-                .title(document.getTitle())
-                .status(document.getStatus())
-                .createdAt(document.getCreatedAt())
-                .updatedAt(document.getUpdatedAt())
-                .build();
+    @GetMapping("/{id}/details")
+    public DocumentDetailsResponse getDocumentWithHistory(@PathVariable Long id) {
+        return documentService.getWithHistory(id);
+    }
+
+    /**
+     * Пакетное получение документов по списку id
+     * Пример:
+     * GET /api/documents/batch?ids=1,2,3&page=0&size=10&sort=createdAt,desc
+     */
+    @GetMapping("/batch")
+    public Page<DocumentResponse> getDocumentsBatch(
+            @RequestParam List<Long> ids,
+            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
+
+        return documentService.getByIds(ids, pageable);
     }
 }

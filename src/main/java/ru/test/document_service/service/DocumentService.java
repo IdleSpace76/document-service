@@ -1,8 +1,11 @@
 package ru.test.document_service.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import ru.test.document_service.domain.DocumentItem;
+import ru.test.document_service.dto.DocumentDetailsResponse;
+import ru.test.document_service.dto.DocumentResponse;
 import ru.test.document_service.dto.DocumentSearchFilter;
-import ru.test.document_service.dto.batch.DocumentBatchResponse;
 
 import java.util.List;
 
@@ -39,17 +42,17 @@ public interface DocumentService {
     DocumentItem approve(Long id, String approver, String comment);
 
     /**
-     * Пакетный submit документов
-     */
-    DocumentBatchResponse submitBatch(List<Long> documentIds, String performedBy, String comment);
-
-    /**
-     * Пакетный approve документов
-     */
-    DocumentBatchResponse approveBatch(List<Long> documentIds, String approver, String comment);
-
-    /**
      * Поиск документов
      */
     List<DocumentItem> search(DocumentSearchFilter filter);
+
+    /**
+     * Один документ вместе с полной историей
+     */
+    DocumentDetailsResponse getWithHistory(Long id);
+
+    /**
+     * Пакетное получение документов по списку id с пагинацией/сортировкой
+     */
+    Page<DocumentResponse> getByIds(List<Long> ids, Pageable pageable);
 }
