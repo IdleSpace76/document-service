@@ -1,0 +1,3 @@
+TRUNCATE TABLE approval_registry CASCADE;
+TRUNCATE TABLE document_history CASCADE;
+TRUNCATE TABLE documents CASCADE;
