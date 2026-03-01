@@ -13,17 +13,17 @@ import java.time.Instant;
 public class ApiErrorResponse {
 
     /**
-     * Машинно-читаемый код ошибки (для клиента).
+     * Код ошибки
      */
     String code;
 
     /**
-     * Человеко-читаемое сообщение.
+     * Сообщение
      */
     String message;
 
     /**
-     * Время возникновения ошибки.
+     * Время
      */
     Instant timestamp;
 }
