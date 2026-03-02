@@ -15,7 +15,7 @@ import java.time.Instant;
  * @author a.zharov
  */
 @Entity
-@Table(name = "documents")
+@Table(name = "document")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,8 +26,8 @@ public class DocumentItem {
      * Внутренний id
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "documents_seq")
-    @SequenceGenerator(name = "documents_seq", sequenceName = "documents_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "document_seq")
+    @SequenceGenerator(name = "document_seq", sequenceName = "document_seq", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 

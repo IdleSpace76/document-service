@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+          http://www.liquibase.org/xml/ns/dbchangelog
+          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd">
+
+    <!-- Индекс для воркеров: status + id -->
+    <changeSet id="1-add-index-document-status-id" author="a.zharov">
+        <createIndex indexName="idx_document_status_id"
+                     tableName="document">
+            <column name="status"/>
+            <column name="id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Индекс для поиска: status + created_at -->
+    <changeSet id="2-add-index-document-status-created-at" author="a.zharov">
+        <createIndex indexName="idx_document_status_created_at"
+                     tableName="document">
+            <column name="status"/>
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Индекс по id в document_history -->
+    <changeSet id="3-add-index-document-history-document-id" author="a.zharov">
+        <createIndex indexName="idx_document_history_document_id"
+                     tableName="document_history">
+            <column name="document_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Индекс по document_id в реестре утверждений -->
+    <changeSet id="4-add-index-approval-registry-document-id" author="a.zharov">
+        <createIndex indexName="idx_approval_registry_document_id"
+                     tableName="approval_registry">
+            <column name="document_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
